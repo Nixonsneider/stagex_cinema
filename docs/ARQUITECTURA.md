@@ -71,6 +71,18 @@ No se debe confiar en el precio enviado por React: el backend calcula el total d
 
 `PaymentGateway` y `MailService` son interfaces internas. Sus implementaciones concretas se seleccionan por configuración (`sandbox` en desarrollo). Así se puede probar la compra sin acoplar la lógica a un proveedor.
 
+### Pagos (implementado en T-046)
+
+- Puerto: `com.stagex.stagex_backend.payment.domain.PaymentGateway` con `createSession(PaymentRequest)` y `parseWebhook(rawPayload, signature)`.
+- Implementación `sandbox`: `payment.gateway.sandbox.SandboxPaymentGateway`. Genera referencias `sbx_<uuid>`, URL de checkout simulada y vencimiento de sesión. Autentica el webhook con HMAC-SHA256 del cuerpo crudo (cabecera `X-Sandbox-Signature`, hexadecimal) y compara en tiempo constante.
+- Selección: `stagex.payment.provider=sandbox` en `PaymentGatewayConfiguration`. Propiedades: `stagex.payment.sandbox.checkout-base-url` (`PAYMENT_PROVIDER_URL`), `stagex.payment.sandbox.secret` (`PAYMENT_PROVIDER_SECRET`) y `stagex.payment.sandbox.session-ttl`.
+- Pruebas: `FakePaymentGateway` (en `src/test`) sustituye al proveedor y permite forzar pago aprobado, rechazado o proveedor caído.
+- `PaymentNotification.eventId` es la llave de idempotencia que usará el webhook (T-047).
+
+### Tokens QR (implementado en T-050, sin persistencia)
+
+`ticket.application.QrTokenService` emite tokens opacos de 256 bits (`SecureRandom`, Base64 URL sin relleno, 43 caracteres) y calcula su hash SHA-256. Solo el hash se guarda en `tickets.qr_token_hash`; el token en claro va en el QR y no se registra en logs. Para validar se calcula el hash del token leído y se busca la entrada por ese valor.
+
 ## Concurrencia y tareas
 
 - La creación de reservas usa transacciones y restricciones de base de datos.

@@ -159,6 +159,17 @@ Respuesta exitosa:
 }
 ```
 
+Webhook sandbox (`POST /payments/webhook`):
+
+```text
+Content-Type: application/x-www-form-urlencoded
+X-Sandbox-Signature: <HMAC-SHA256 hexadecimal del cuerpo crudo>
+
+eventId=evt-123&reference=sbx_<uuid>&orderId=<uuid>&status=APPROVED
+```
+
+`status` admite `APPROVED` o `REJECTED`. Una firma inválida o un cuerpo mal formado se rechaza sin indicar el motivo exacto.
+
 Un QR ya usado responde `409 TICKET_ALREADY_USED` y un QR inexistente `404 TICKET_NOT_FOUND`.
 
 Ventas (`GET /admin/sales`): `from` y `to` filtran por fecha, `screeningId` por función y `status` por estado de la orden. La respuesta incluye el listado paginado y los totales:

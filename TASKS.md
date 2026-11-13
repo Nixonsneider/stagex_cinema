@@ -44,7 +44,7 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 | T-003 | Configurar estructura de frontend React/TypeScript | Kevin Linares Castañeda | TODO | — | El frontend inicia, navega y tiene una página base |
 | T-004 | Configurar PostgreSQL local y perfiles de entorno | Nixon Esneider Villamizar Sarmiento | DONE | — | Docker Compose levanta PostgreSQL en `localhost:5433`, el perfil `local` conecta y el backend responde en `/actuator/health` |
 | T-005 | Configurar Flyway y migración inicial vacía | Nixon Esneider Villamizar Sarmiento | TODO | T-002, T-004 | Las migraciones se ejecutan en una base PostgreSQL limpia |
-| T-006 | Configurar lint, pruebas y build de backend y frontend | Luis López | TODO | T-002, T-003 | Las validaciones se ejecutan con comandos documentados |
+| T-006 | Configurar lint, pruebas y build de backend y frontend | Luis López | IN_PROGRESS | T-002, T-003 | Las validaciones se ejecutan con comandos documentados |
 | T-007 | Revisar contrato inicial de API entre frontend y backend | Santiago Caro Barbosa | REVIEW | T-002, T-003 | `docs/API.md` refleja las rutas y payloads acordados |
 
 ## Fase 1 — Modelo de datos y seguridad
@@ -86,7 +86,7 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 | T-043 | Implementar creación de órdenes y cálculo de total | Santiago Caro Barbosa | TODO | T-041 | El total se calcula en backend y la orden limita la cantidad de asientos |
 | T-044 | Implementar mapa y selección de asientos en React | Kevin Linares Castañeda | TODO | T-040, T-041 | La interfaz distingue disponible, seleccionado, bloqueado y vendido |
 | T-045 | Implementar checkout para cliente registrado e invitado | Kevin Linares Castañeda | TODO | T-043 | El checkout valida correo y muestra vencimiento de la reserva |
-| T-046 | Implementar adaptador de pago sandbox | Luis López | TODO | T-043 | El proveedor se puede sustituir por un fake en pruebas |
+| T-046 | Implementar adaptador de pago sandbox | Luis López | REVIEW | T-043 | El proveedor se puede sustituir por un fake en pruebas |
 | T-047 | Implementar webhook idempotente de pago | Luis López | TODO | T-046 | Un webhook repetido no duplica órdenes ni entradas |
 | T-048 | Integrar flujo aprobado y rechazado de pago | Santiago Caro Barbosa | TODO | T-046, T-047 | Pago aprobado vende asientos; pago rechazado los libera |
 | T-049 | Ejecutar pruebas de concurrencia de asientos | Luis López | TODO | T-041, T-048 | Las pruebas demuestran que no existe doble venta |
@@ -95,7 +95,7 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 
 | ID | Tarea | Responsable | Estado | Dependencias | Criterio de aceptación |
 |---|---|---|---|---|---|
-| T-050 | Generar entradas y token QR seguro | Luis López | TODO | T-048 | Se crea una entrada por asiento con token no predecible |
+| T-050 | Generar entradas y token QR seguro | Luis López | IN_PROGRESS | T-048 | Se crea una entrada por asiento con token no predecible |
 | T-051 | Implementar correo de confirmación | Luis López | TODO | T-050 | El correo contiene la información necesaria sin datos sensibles de pago |
 | T-052 | Implementar “Mis entradas” y descarga/visualización QR | Kevin Linares Castañeda | TODO | T-050 | El cliente solo ve sus propias entradas |
 | T-053 | Implementar validación de QR para taquillero | Luis López | TODO | T-050, T-018 | Un QR válido pasa a `USED` y un segundo uso es rechazado |

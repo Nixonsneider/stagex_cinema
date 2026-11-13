@@ -110,6 +110,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<!-- T-006: muestra advertencias del compilador (lint) en cada build. -->
+					<showWarnings>true</showWarnings>
+					<compilerArgs>
+						<arg>-Xlint:all,-processing,-serial</arg>
+					</compilerArgs>
+				</configuration>
 				<executions>
 					<execution>
 						<id>default-compile</id>
