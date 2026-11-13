@@ -88,6 +88,17 @@ Respuesta exitosa:
 }
 ```
 
+Webhook sandbox (`POST /payments/webhook`):
+
+```text
+Content-Type: application/x-www-form-urlencoded
+X-Sandbox-Signature: <HMAC-SHA256 hexadecimal del cuerpo crudo>
+
+eventId=evt-123&reference=sbx_<uuid>&orderId=<uuid>&status=APPROVED
+```
+
+`status` admite `APPROVED` o `REJECTED`. Una firma inválida o un cuerpo mal formado se rechaza sin indicar el motivo exacto.
+
 ## Errores
 
 Formato único:
