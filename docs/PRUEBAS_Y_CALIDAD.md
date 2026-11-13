@@ -24,6 +24,23 @@ Probar cada endpoint con MockMvc/WebTestClient: códigos HTTP, DTOs, errores, ro
 
 Probar rutas principales, formularios, selección de asientos, contador de expiración, errores de pago, guardas de rol y accesibilidad básica.
 
+## Comandos de validación
+
+Backend (desde `backend/`; en Windows usar `.\mvnw.cmd`):
+
+| Validación | Comando | Qué hace |
+|---|---|---|
+| Compilación con lint | `./mvnw -B compile` | Compila con `-Xlint:all` y muestra advertencias |
+| Pruebas | `./mvnw -B test` | Ejecuta pruebas unitarias y la prueba de contexto (no necesita PostgreSQL) |
+| Build completo | `./mvnw -B verify` | Compila, prueba y empaqueta el JAR; es lo que ejecuta la CI |
+
+La integración continua (`.github/workflows/backend-ci.yml`) ejecuta `./mvnw -B verify`
+con Java 21 en cada pull request que modifique `backend/` y en cada push a `main`.
+Un pull request no se fusiona si este flujo falla.
+
+Frontend: pendiente hasta que exista `frontend/` (T-003). Se agregarán `npm run lint`,
+`npm run test` y `npm run build` a esta tabla y a la CI.
+
 ## Casos críticos mínimos
 
 | Caso | Resultado esperado |
