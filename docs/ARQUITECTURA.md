@@ -44,7 +44,7 @@ Cada módulo mantiene `controller`, `application/service`, `domain`, `repository
 
 ## Flujo de compra
 
-1. `GET /functions/{id}/seats` lee el mapa y estados vigentes.
+1. `GET /screenings/{screeningId}/seats` lee el mapa y estados vigentes.
 2. `POST /holds` valida función, cantidad y disponibilidad dentro de una transacción.
 3. PostgreSQL bloquea las filas de asiento de función en un orden determinista.
 4. Se crea una orden `PENDING` y reservas `HELD` con vencimiento.
