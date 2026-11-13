@@ -7,8 +7,8 @@
 | `users` | Clientes y personal | `id`, `name`, `email`, `password_hash`, `role`, `status`, timestamps |
 | `cinemas` | Cine operado | `id`, `name`, `address`, `timezone`, `status` |
 | `user_cinemas` | Alcance del administrador | `user_id`, `cinema_id` |
-| `movies` | Catálogo | `id`, `title`, `synopsis`, `duration_minutes`, `age_rating`, `language`, `format`, `poster_url`, `trailer_url`, `status` |
-| `rooms` | Salas físicas | `id`, `cinema_id`, `name`, `status` |
+| `movies` | Catálogo administrado por cine | `id`, `cinema_id`, `title`, `synopsis`, `duration_minutes`, `genre`, `age_rating`, `language`, `format`, `cast_members`, `poster_url`, `trailer_url`, `status` |
+| `rooms` | Salas físicas | `id`, `cinema_id`, `name`, `room_type`, `status` |
 | `seats` | Mapa base de la sala | `id`, `room_id`, `row_label`, `seat_number`, `seat_type`, `status` |
 | `screenings` | Función programada | `id`, `movie_id`, `room_id`, `starts_at`, `ends_at`, `price`, `status` |
 | `screening_seats` | Estado de cada asiento en una función | `id`, `screening_id`, `seat_id`, `status`, `hold_expires_at`, `version` |
@@ -31,9 +31,9 @@ user N---N cinema
 
 ```text
 user:          PENDING_VERIFICATION | ACTIVE | DISABLED
-movie/room:    ACTIVE | INACTIVE
+cinema/movie/room/seat: ACTIVE | INACTIVE
 screening:    SCHEDULED | CANCELLED | FINISHED
-seat:          AVAILABLE | HELD | SOLD
+screening_seat: AVAILABLE | HELD | SOLD
 order:         PENDING | PAID | REJECTED | EXPIRED | CANCELLED
 ticket:        ISSUED | USED | CANCELLED | EXPIRED
 ```
@@ -41,6 +41,9 @@ ticket:        ISSUED | USED | CANCELLED | EXPIRED
 ## Restricciones obligatorias
 
 - `users.email` único e indexado, comparado en minúsculas.
+- V2 crea usuarios, cines y asignaciones. La clave primaria de `user_cinemas` impide repetir una asignación. El servicio que edite un usuario debe actualizar `updated_at`.
+- V3 vincula películas y salas al cine que las administra. El nombre de sala es único dentro del cine, sin distinguir mayúsculas.
+- Cada asiento físico ocupa una coordenada única dentro de su sala (fila en mayúsculas y columna positiva). La capacidad física se obtiene contando los asientos del mapa; un hueco entre columnas puede representar un pasillo. El estado operativo del asiento pertenece a este mapa.
 - `screening_seats(screening_id, seat_id)` único.
 - `order_items(order_id, screening_seat_id)` único.
 - `payment_reference` único cuando no sea nulo.

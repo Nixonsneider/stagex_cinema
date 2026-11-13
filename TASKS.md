@@ -51,8 +51,8 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 
 | ID | Tarea | Responsable | Estado | Dependencias | Criterio de aceptación |
 |---|---|---|---|---|---|
-| T-010 | Crear migraciones de usuarios, cines y relación usuario-cine | Nixon Esneider Villamizar Sarmiento | TODO | T-005 | Tablas, claves, índices y restricciones están migradas |
-| T-011 | Crear migraciones de películas, salas y asientos | Nixon Esneider Villamizar Sarmiento | TODO | T-005 | El modelo permite configurar salas con filas y columnas |
+| T-010 | Crear migraciones de usuarios, cines y relación usuario-cine | Nixon Esneider Villamizar Sarmiento | DONE | T-005 | Tablas, claves, índices y restricciones están migradas |
+| T-011 | Crear migraciones de películas, salas y asientos | Nixon Esneider Villamizar Sarmiento | DONE | T-005 | El modelo permite configurar salas con filas y columnas |
 | T-012 | Crear migraciones de funciones y asientos por función | Nixon Esneider Villamizar Sarmiento | TODO | T-011 | Cada función tiene un estado independiente por asiento |
 | T-013 | Crear migraciones de órdenes, entradas y auditoría | Nixon Esneider Villamizar Sarmiento | TODO | T-012 | El esquema soporta compra, QR, validación y trazabilidad |
 | T-014 | Implementar entidades y repositorios de autenticación | Santiago Caro Barbosa | TODO | T-010 | Usuario, rol y estado se persisten con validación |
