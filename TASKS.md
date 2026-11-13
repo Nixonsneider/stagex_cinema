@@ -43,7 +43,7 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 | T-002 | Configurar estructura de backend Spring Boot 4.1.2 | Nixon Esneider Villamizar Sarmiento | DONE | — | El backend generado en `backend/` compila, la prueba de contexto pasa sin PostgreSQL local y Actuator expone `/actuator/health` |
 | T-003 | Configurar estructura de frontend React/TypeScript | Kevin Linares Castañeda | TODO | — | El frontend inicia, navega y tiene una página base |
 | T-004 | Configurar PostgreSQL local y perfiles de entorno | Nixon Esneider Villamizar Sarmiento | DONE | — | Docker Compose levanta PostgreSQL en `localhost:5433`, el perfil `local` conecta y el backend responde en `/actuator/health` |
-| T-005 | Configurar Flyway y migración inicial vacía | Nixon Esneider Villamizar Sarmiento | TODO | T-002, T-004 | Las migraciones se ejecutan en una base PostgreSQL limpia |
+| T-005 | Configurar Flyway y migración inicial vacía | Nixon Esneider Villamizar Sarmiento | DONE | T-002, T-004 | Las migraciones se ejecutan en una base PostgreSQL limpia |
 | T-006 | Configurar lint, pruebas y build de backend y frontend | Luis López | IN_PROGRESS | T-002, T-003 | Las validaciones se ejecutan con comandos documentados |
 | T-007 | Revisar contrato inicial de API entre frontend y backend | Santiago Caro Barbosa | REVIEW | T-002, T-003 | `docs/API.md` refleja las rutas y payloads acordados |
 

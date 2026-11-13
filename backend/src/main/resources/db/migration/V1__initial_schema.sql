@@ -1,0 +1,1 @@
+-- Punto de partida de Stage X. Las tablas de negocio se crean en versiones posteriores.

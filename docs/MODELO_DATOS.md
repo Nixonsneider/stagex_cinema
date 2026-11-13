@@ -52,7 +52,9 @@ ticket:        ISSUED | USED | CANCELLED | EXPIRED
 
 ## Migraciones
 
-Flyway crea el esquema en orden `V1__initial_schema.sql`, `V2__seed_roles_and_admin.sql`, etc. No usar `ddl-auto=create` en ambientes compartidos. Toda modificación de esquema debe tener migración revisable.
+Al iniciar el backend con el perfil `local`, Flyway aplica los scripts de `backend/src/main/resources/db/migration/` en orden de versión. En una base limpia, `V1__initial_schema.sql` registra la versión 1 en `flyway_schema_history` sin crear tablas de negocio. Cada cambio posterior de esquema requiere una migración nueva. Hibernate valida el esquema con `ddl-auto=validate`.
+
+Para repetir la prueba de integración, define `STAGEX_TEST_DATABASE_URL` con la URL JDBC de una base PostgreSQL vacía y desechable que acepte las credenciales del perfil `local`. Ejecuta `./mvnw test` desde `backend/`. Sin esa variable, la prueba de migración se omite.
 
 ## Desarrollo local
 
