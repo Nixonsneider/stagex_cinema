@@ -45,7 +45,7 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 | T-004 | Configurar PostgreSQL local y perfiles de entorno | Nixon Esneider Villamizar Sarmiento | DONE | — | Docker Compose levanta PostgreSQL en `localhost:5433`, el perfil `local` conecta y el backend responde en `/actuator/health` |
 | T-005 | Configurar Flyway y migración inicial vacía | Nixon Esneider Villamizar Sarmiento | TODO | T-002, T-004 | Las migraciones se ejecutan en una base PostgreSQL limpia |
 | T-006 | Configurar lint, pruebas y build de backend y frontend | Luis López | IN_PROGRESS | T-002, T-003 | Las validaciones se ejecutan con comandos documentados |
-| T-007 | Revisar contrato inicial de API entre frontend y backend | Santiago Caro Barbosa | TODO | T-002, T-003 | `docs/API.md` refleja las rutas y payloads acordados |
+| T-007 | Revisar contrato inicial de API entre frontend y backend | Santiago Caro Barbosa | REVIEW | T-002, T-003 | `docs/API.md` refleja las rutas y payloads acordados |
 
 ## Fase 1 — Modelo de datos y seguridad
 
