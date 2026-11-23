@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -175,7 +176,9 @@ public class BookingService {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR",
 					"Puedes reservar máximo " + properties.maxSeatsPerOrder() + " asientos por compra.");
 		}
-		if (screeningSeatIds.contains(null) || new HashSet<>(screeningSeatIds).size() != screeningSeatIds.size()) {
+		// Las listas inmutables (List.of) lanzan NullPointerException con contains(null).
+		if (screeningSeatIds.stream().anyMatch(Objects::isNull)
+				|| new HashSet<>(screeningSeatIds).size() != screeningSeatIds.size()) {
 			throw new ApiException(HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", "La selección de asientos no es válida.");
 		}
 	}
