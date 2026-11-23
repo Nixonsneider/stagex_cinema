@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { StatusMessage } from '../components/StatusMessage';
 import { useAuth } from '../features/auth/AuthContext';
@@ -10,7 +10,7 @@ import { formatCountdown, useCountdown } from '../hooks/useCountdown';
 import { useDocumentTitle } from '../hooks/useDocumentTitle';
 import { createHold, getScreeningSeats, releaseHold } from '../services/api/bookingApi';
 import { ApiError } from '../services/api/httpClient';
-import type { HoldResponse, SeatView } from '../types/booking';
+import type { HoldResponse, ScreeningSeats, SeatView } from '../types/booking';
 
 /** A partir de estos segundos se avisa que la reserva está por vencer. */
 const WARNING_SECONDS = 120;
@@ -29,6 +29,13 @@ export function SeatSelectionPage() {
   const { user } = useAuth();
   const seatsResult = useAsync(() => getScreeningSeats(screeningId), [screeningId]);
   const { reload } = seatsResult;
+  // Último mapa cargado: al refrescar se sigue mostrando en vez de parpadear con "Cargando…".
+  const lastMap = useRef<ScreeningSeats | null>(null);
+  if (seatsResult.status === 'success') {
+    lastMap.current = seatsResult.data;
+  } else if (lastMap.current?.screeningId !== screeningId) {
+    lastMap.current = null;
+  }
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [hold, setHold] = useState<HoldResponse | null>(null);
@@ -55,16 +62,19 @@ export function SeatSelectionPage() {
 
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
 
-  if (seatsResult.status === 'loading') {
+  const map = lastMap.current;
+
+  if (!map && seatsResult.status === 'loading') {
     return <StatusMessage kind="loading">Cargando asientos…</StatusMessage>;
   }
 
-  if (seatsResult.status === 'error') {
+  if (!map || seatsResult.status === 'error') {
+    const failed = seatsResult.status === 'error' ? seatsResult : null;
     return (
       <section>
-        <h1>{seatsResult.notFound ? 'Función no disponible' : 'No pudimos cargar los asientos'}</h1>
-        <StatusMessage kind="error" onRetry={seatsResult.notFound ? undefined : seatsResult.reload}>
-          {seatsResult.message}
+        <h1>{failed?.notFound ? 'Función no disponible' : 'No pudimos cargar los asientos'}</h1>
+        <StatusMessage kind="error" onRetry={failed?.notFound ? undefined : reload}>
+          {failed?.message ?? 'Ocurrió un problema. Intenta de nuevo en unos minutos.'}
         </StatusMessage>
         <p>
           <Link to="/">Volver a la cartelera</Link>
@@ -73,7 +83,6 @@ export function SeatSelectionPage() {
     );
   }
 
-  const map = seatsResult.data;
   const selectedSeats = map.seats.filter((seat) => selected.has(seat.id));
 
   const toggleSeat = (seat: SeatView) => {

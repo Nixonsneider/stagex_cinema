@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -189,7 +189,8 @@ describe('enlaces de correo', () => {
     renderAt('/verify-email?token=abc123');
 
     expect(await screen.findByText('Tu cuenta quedó activa. Ya puedes iniciar sesión.')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toBeInTheDocument();
+    // El menú también tiene "Iniciar sesión": se busca el enlace dentro del contenido.
+    expect(within(screen.getByRole('main')).getByRole('link', { name: 'Iniciar sesión' })).toBeInTheDocument();
   });
 
   it('avisa cuando el enlace de verificación venció', async () => {
