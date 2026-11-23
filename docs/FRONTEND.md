@@ -3,6 +3,7 @@
 ## Estado actual
 
 - **T-003:** proyecto en `frontend/` con React 19, TypeScript, Vite, React Router 7 y Vitest. Todas las rutas de esta guía existen; las que aún no están implementadas muestran una página base con la tarea pendiente. Comandos en `frontend/README.md`.
+- **T-020:** inicio de sesión (`/login`), registro (`/register`) y recuperación de contraseña (`/forgot-password`) con validación accesible, protección de rutas por rol y menú según el rol. Sin sesión, una ruta privada lleva al login y luego regresa a la ruta pedida; con otro rol muestra "Acceso no permitido". Después de iniciar sesión, el cliente va a la cartelera, el taquillero a `/access/validate` y el administrador a `/admin/movies`. Mientras T-016 no exponga `/auth/*`, `src/services/api/mock/mockAuth.ts` simula el backend con las cuentas demo de `frontend/README.md`. Los tokens viven solo en memoria: al recargar la página se pide iniciar sesión de nuevo hasta que el backend entregue el refresh token en una cookie `HttpOnly`.
 - **T-033:** cartelera (`/`) con búsqueda por título y filtros de género y clasificación guardados en la URL, y ficha (`/movies/:movieId`) con funciones agrupadas por día. Mientras el backend no exponga `GET /movies` y `GET /movies/{id}/screenings` (T-030, T-032), los datos salen de `src/services/api/mock`, que replica las reglas del servidor. Para usar el backend se define `VITE_API_URL` y `VITE_USE_MOCKS=false`.
 
 ## Rutas V1.0

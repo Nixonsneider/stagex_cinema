@@ -320,3 +320,76 @@ a {
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   }
 }
+
+/* Acceso: inicio de sesión, registro y recuperación (T-020). */
+.auth-page {
+  max-width: 28rem;
+}
+
+.auth-form {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.field input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.field-hint,
+.field-error {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.field-hint {
+  color: var(--color-muted);
+}
+
+.field-error {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.form-error {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius);
+  background: #fdecee;
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.auth-notice {
+  color: var(--color-muted);
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.nav-list li {
+  display: flex;
+  align-items: center;
+}
+
+.nav-user {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.nav-button {
+  min-height: 44px;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  color: #ffffff;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}

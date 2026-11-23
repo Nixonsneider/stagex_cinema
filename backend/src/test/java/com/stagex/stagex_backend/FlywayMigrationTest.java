@@ -23,4 +23,13 @@ class FlywayMigrationTest {
         assertTrue(java.util.Arrays.stream(flyway.info().applied())
                 .anyMatch(migration -> "V1__initial_schema.sql".equals(migration.getScript())));
     }
+
+    @Test
+    void screeningAndOrderMigrationsAreApplied() {
+        var applied = java.util.Arrays.stream(flyway.info().applied())
+                .map(migration -> migration.getScript())
+                .toList();
+        assertTrue(applied.contains("V4__screenings_and_screening_seats.sql"));
+        assertTrue(applied.contains("V5__orders_tickets_and_audit.sql"));
+    }
 }

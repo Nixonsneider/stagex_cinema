@@ -2,12 +2,15 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
+import { AuthProvider } from '../features/auth/AuthContext';
 import { AppRoutes } from './AppRoutes';
 
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <AppRoutes />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </MemoryRouter>,
   );
 }
@@ -64,9 +67,14 @@ describe('rutas de la aplicación', () => {
     expect(await screen.findByText(/guardiana de faro/)).toBeInTheDocument();
   });
 
-  it('tiene páginas base para las rutas pendientes y una página 404', () => {
+  it('muestra la página de inicio de sesión', () => {
     renderAt('/login');
     expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument();
+  });
+
+  it('tiene páginas base para las rutas públicas pendientes', () => {
+    renderAt('/screenings/scr-001/seats');
+    expect(screen.getByRole('heading', { name: 'Selección de asientos' })).toBeInTheDocument();
   });
 
   it('muestra 404 en rutas desconocidas', () => {

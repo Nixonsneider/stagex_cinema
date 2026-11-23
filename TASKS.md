@@ -53,15 +53,15 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 |---|---|---|---|---|---|
 | T-010 | Crear migraciones de usuarios, cines y relación usuario-cine | Nixon Esneider Villamizar Sarmiento | DONE | T-005 | Tablas, claves, índices y restricciones están migradas |
 | T-011 | Crear migraciones de películas, salas y asientos | Nixon Esneider Villamizar Sarmiento | DONE | T-005 | El modelo permite configurar salas con filas y columnas |
-| T-012 | Crear migraciones de funciones y asientos por función | Nixon Esneider Villamizar Sarmiento | TODO | T-011 | Cada función tiene un estado independiente por asiento |
-| T-013 | Crear migraciones de órdenes, entradas y auditoría | Nixon Esneider Villamizar Sarmiento | TODO | T-012 | El esquema soporta compra, QR, validación y trazabilidad |
+| T-012 | Crear migraciones de funciones y asientos por función | Nixon Esneider Villamizar Sarmiento | REVIEW | T-011 | Cada función tiene un estado independiente por asiento |
+| T-013 | Crear migraciones de órdenes, entradas y auditoría | Nixon Esneider Villamizar Sarmiento | REVIEW | T-012 | El esquema soporta compra, QR, validación y trazabilidad |
 | T-014 | Implementar entidades y repositorios de autenticación | Santiago Caro Barbosa | TODO | T-010 | Usuario, rol y estado se persisten con validación |
 | T-015 | Implementar registro y verificación de clientes | Santiago Caro Barbosa | TODO | T-014 | El cliente queda pendiente hasta confirmar su enlace |
 | T-016 | Implementar inicio de sesión, JWT y cierre de sesión | Santiago Caro Barbosa | TODO | T-014 | La sesión expira y no se devuelven credenciales inválidas de forma sensible |
 | T-017 | Implementar recuperación de contraseña | Santiago Caro Barbosa | TODO | T-015, T-016 | El enlace es temporal, de un solo uso y no revela si el correo existe |
 | T-018 | Implementar autorización por rol y alcance de cine | Santiago Caro Barbosa | TODO | T-016 | `CUSTOMER`, `CASHIER` y `CINEMA_ADMIN` solo acceden a sus rutas |
 | T-019 | Crear datos demo y usuarios iniciales seguros | Nixon Esneider Villamizar Sarmiento | TODO | T-010, T-013 | Una instalación limpia tiene datos mínimos para probar el flujo |
-| T-020 | Crear login, registro y protección de rutas en React | Kevin Linares Castañeda | TODO | T-016, T-018 | Las rutas públicas y privadas se comportan según el rol |
+| T-020 | Crear login, registro y protección de rutas en React | Kevin Linares Castañeda | REVIEW | T-016, T-018 | Las rutas públicas y privadas se comportan según el rol |
 
 ## Fase 2 — Catálogo y programación
 
