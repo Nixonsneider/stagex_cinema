@@ -44,12 +44,17 @@ ticket:        ISSUED | USED | CANCELLED | EXPIRED
 - V2 crea usuarios, cines y asignaciones. La clave primaria de `user_cinemas` impide repetir una asignación. El servicio que edite un usuario debe actualizar `updated_at`.
 - V3 vincula películas y salas al cine que las administra. El nombre de sala es único dentro del cine, sin distinguir mayúsculas.
 - Cada asiento físico ocupa una coordenada única dentro de su sala (fila en mayúsculas y columna positiva). La capacidad física se obtiene contando los asientos del mapa; un hueco entre columnas puede representar un pasillo. El estado operativo del asiento pertenece a este mapa.
+- V4 crea `screenings` y `screening_seats`. Cada función guarda su precio y moneda (`currency`, ISO 4217, por defecto `COP`). Cada función tiene su propio estado por asiento; un trigger impide asociar un asiento de otra sala.
+- `screening_seats.hold_expires_at` existe solo cuando el estado es `HELD`; `version` sirve para el control optimista de JPA.
+- V5 crea `orders`, `order_items`, `tickets` y `audit_events`. Una orden tiene `user_id` o `guest_email` (en minúsculas), nunca ambos. Una orden `PAID` siempre tiene `payment_reference`. Un trigger impide agregar a la orden un asiento de otra función.
+- `tickets.qr_token_hash` es el SHA-256 en hexadecimal minúscula que produce `QrTokenService`. Solo una entrada `USED` tiene `validated_at` y `validated_by`, y siempre ambos.
+- `audit_events` solo admite inserciones: un trigger rechaza `UPDATE` y `DELETE` (SQLSTATE `23001`). `actor_id` es nulo cuando la acción la origina el sistema; `action` va en mayúsculas (`TICKET_VALIDATED`) y `metadata_json` es un objeto JSON.
 - `screening_seats(screening_id, seat_id)` único.
 - `order_items(order_id, screening_seat_id)` único.
 - `payment_reference` único cuando no sea nulo.
 - `ends_at > starts_at`.
 - `price >= 0`.
-- No se permite más de una función solapada en una sala. Validar en servicio y reforzar con exclusión temporal si la estrategia de PostgreSQL lo permite.
+- No se permite más de una función solapada en una sala. Validar en servicio (`409 SCREENING_OVERLAP`) y reforzar en base de datos: la restricción `screenings_room_no_overlap` (extensión `btree_gist`) rechaza con SQLSTATE `23P01` dos funciones `SCHEDULED` cuyos rangos `[starts_at, ends_at)` se crucen en la misma sala. Una función puede empezar justo cuando termina la anterior, y las canceladas o finalizadas no ocupan horario. Crear la extensión requiere un usuario con permiso `CREATE` en la base; el usuario del `docker-compose.yml` lo tiene.
 - Los asientos vendidos se protegen con `SELECT ... FOR UPDATE` o equivalente JPA pesimista.
 - Los tokens de QR se almacenan hasheados.
 
@@ -57,7 +62,7 @@ ticket:        ISSUED | USED | CANCELLED | EXPIRED
 
 Al iniciar el backend con el perfil `local`, Flyway aplica los scripts de `backend/src/main/resources/db/migration/` en orden de versión. En una base limpia, `V1__initial_schema.sql` registra la versión 1 en `flyway_schema_history` sin crear tablas de negocio. Cada cambio posterior de esquema requiere una migración nueva. Hibernate valida el esquema con `ddl-auto=validate`.
 
-Para repetir la prueba de integración, define `STAGEX_TEST_DATABASE_URL` con la URL JDBC de una base PostgreSQL vacía y desechable que acepte las credenciales del perfil `local`. Ejecuta `./mvnw test` desde `backend/`. Sin esa variable, la prueba de migración se omite.
+Para repetir la prueba de integración, define `STAGEX_TEST_DATABASE_URL` con la URL JDBC de una base PostgreSQL vacía y desechable que acepte las credenciales del perfil `local`. Ejecuta `./mvnw test` desde `backend/`. Sin esa variable, las pruebas de migración y de esquema (`CinemaSchemaTest`, `ScreeningSchemaTest`, `OrderTicketSchemaTest`) se omiten.
 
 ## Desarrollo local
 
