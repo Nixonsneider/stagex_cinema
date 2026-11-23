@@ -8,6 +8,8 @@ import com.stagex.stagex_backend.auth.repository.AccountTokenRepository;
 import com.stagex.stagex_backend.auth.repository.RefreshTokenRepository;
 import com.stagex.stagex_backend.auth.repository.UserCinemaRepository;
 import com.stagex.stagex_backend.auth.repository.UserRepository;
+import com.stagex.stagex_backend.booking.repository.BookingRepository;
+import com.stagex.stagex_backend.catalog.repository.CatalogRepository;
 
 /**
  * Verifica que el contexto arranca sin PostgreSQL. Los repositorios se simulan porque la
@@ -16,7 +18,8 @@ import com.stagex.stagex_backend.auth.repository.UserRepository;
 @SpringBootTest(properties = {
 		"spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,"
 				+ "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration,"
-				+ "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration"
+				+ "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
+		"stagex.booking.expiration-job-enabled=false"
 })
 class StagexBackendApplicationTests {
 
@@ -31,6 +34,12 @@ class StagexBackendApplicationTests {
 
 	@MockitoBean
 	UserCinemaRepository userCinemaRepository;
+
+	@MockitoBean
+	CatalogRepository catalogRepository;
+
+	@MockitoBean
+	BookingRepository bookingRepository;
 
 	@Test
 	void contextLoads() {

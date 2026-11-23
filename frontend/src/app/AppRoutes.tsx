@@ -9,6 +9,7 @@ import { NotFoundPage } from '../pages/NotFoundPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { ResetPasswordPage } from '../pages/ResetPasswordPage';
+import { SeatSelectionPage } from '../pages/SeatSelectionPage';
 import { VerifyEmailPage } from '../pages/VerifyEmailPage';
 import type { Role } from '../types/auth';
 
@@ -25,7 +26,6 @@ interface PendingRoute {
  * Las rutas privadas exigen sesión y rol (T-020); el backend vuelve a validar el permiso.
  */
 export const PENDING_ROUTES: ReadonlyArray<PendingRoute> = [
-  { path: 'screenings/:screeningId/seats', title: 'Selección de asientos', task: 'T-044' },
   { path: 'checkout/:orderId', title: 'Resumen y pago', task: 'T-045' },
   { path: 'confirmation/:orderId', title: 'Confirmación de compra', task: 'T-045' },
   { path: 'my-tickets', title: 'Mis entradas', task: 'T-052', roles: ['CUSTOMER'] },
@@ -43,6 +43,7 @@ export function AppRoutes() {
       <Route element={<Layout />}>
         <Route index element={<BillboardPage />} />
         <Route path="movies/:movieId" element={<MovieDetailPage />} />
+        <Route path="screenings/:screeningId/seats" element={<SeatSelectionPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />

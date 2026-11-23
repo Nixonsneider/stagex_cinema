@@ -70,7 +70,7 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 | T-030 | Implementar CRUD de películas en backend | Santiago Caro Barbosa | TODO | T-011, T-018 | Se pueden crear, editar, activar y desactivar películas |
 | T-031 | Implementar CRUD de salas y mapa básico | Santiago Caro Barbosa | TODO | T-011, T-018 | Una sala tiene asientos configurables y estado operativo |
 | T-032 | Implementar CRUD de funciones y precios | Santiago Caro Barbosa | TODO | T-012, T-030, T-031 | Se rechazan funciones solapadas o asociadas a recursos inactivos |
-| T-033 | Implementar cartelera, búsqueda y ficha pública | Kevin Linares Castañeda | IN_PROGRESS | T-030, T-032 | Solo se muestran películas con funciones disponibles |
+| T-033 | Implementar cartelera, búsqueda y ficha pública | Kevin Linares Castañeda | REVIEW | T-030, T-032 | Solo se muestran películas con funciones disponibles |
 | T-034 | Implementar panel de películas en React | Kevin Linares Castañeda | TODO | T-030 | El administrador puede gestionar el catálogo desde la interfaz |
 | T-035 | Implementar panel de salas y asientos en React | Kevin Linares Castañeda | TODO | T-031 | El administrador puede crear sala y configurar filas/columnas |
 | T-036 | Implementar panel de funciones en React | Kevin Linares Castañeda | TODO | T-032 | El administrador puede programar, editar y cancelar una función |
@@ -80,11 +80,11 @@ integrante ayude. Cada tarea debe tener un único responsable principal.
 
 | ID | Tarea | Responsable | Estado | Dependencias | Criterio de aceptación |
 |---|---|---|---|---|---|
-| T-040 | Implementar consulta de disponibilidad por función | Santiago Caro Barbosa | TODO | T-012, T-032 | La API devuelve estados actuales de los asientos |
-| T-041 | Implementar bloqueo temporal transaccional | Nixon Esneider Villamizar Sarmiento | TODO | T-012, T-040 | Dos clientes no pueden bloquear el mismo asiento |
-| T-042 | Implementar expiración y liberación de reservas | Nixon Esneider Villamizar Sarmiento | TODO | T-041 | Los asientos vencidos vuelven a estar disponibles |
-| T-043 | Implementar creación de órdenes y cálculo de total | Santiago Caro Barbosa | TODO | T-041 | El total se calcula en backend y la orden limita la cantidad de asientos |
-| T-044 | Implementar mapa y selección de asientos en React | Kevin Linares Castañeda | TODO | T-040, T-041 | La interfaz distingue disponible, seleccionado, bloqueado y vendido |
+| T-040 | Implementar consulta de disponibilidad por función | Santiago Caro Barbosa | REVIEW | T-012, T-032 | La API devuelve estados actuales de los asientos |
+| T-041 | Implementar bloqueo temporal transaccional | Nixon Esneider Villamizar Sarmiento | REVIEW | T-012, T-040 | Dos clientes no pueden bloquear el mismo asiento |
+| T-042 | Implementar expiración y liberación de reservas | Nixon Esneider Villamizar Sarmiento | REVIEW | T-041 | Los asientos vencidos vuelven a estar disponibles |
+| T-043 | Implementar creación de órdenes y cálculo de total | Santiago Caro Barbosa | IN_PROGRESS | T-041 | El total se calcula en backend y la orden limita la cantidad de asientos |
+| T-044 | Implementar mapa y selección de asientos en React | Kevin Linares Castañeda | REVIEW | T-040, T-041 | La interfaz distingue disponible, seleccionado, bloqueado y vendido |
 | T-045 | Implementar checkout para cliente registrado e invitado | Kevin Linares Castañeda | TODO | T-043 | El checkout valida correo y muestra vencimiento de la reserva |
 | T-046 | Implementar adaptador de pago sandbox | Luis López | TODO | T-043 | El proveedor se puede sustituir por un fake en pruebas |
 | T-047 | Implementar webhook idempotente de pago | Luis López | TODO | T-046 | Un webhook repetido no duplica órdenes ni entradas |

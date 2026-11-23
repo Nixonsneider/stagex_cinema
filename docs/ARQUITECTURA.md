@@ -77,6 +77,13 @@ No se debe confiar en el precio enviado por React: el backend calcula el total d
 - Errores con el formato único de docs/API.md (`GlobalExceptionHandler` y los manejadores 401/403 de seguridad).
 - Configuración: `stagex.auth.*` en `application.properties` (`JWT_SECRET`, `FRONTEND_URL`, vigencias de tokens).
 
+### Cartelera y reservas (T-033 backend, T-040 a T-042)
+
+- `catalog`: `CatalogController` → `CatalogService` → `CatalogRepository` (consultas con `JdbcClient`). Solo publica películas activas de cines activos con al menos una función programada, futura y en sala activa.
+- `booking`: `BookingController` → `BookingService` → `BookingRepository`. `POST /holds` bloquea las filas de `screening_seats` con `SELECT ... FOR UPDATE` ordenado por id (sin interbloqueos), crea la orden `PENDING` con su total y sus `order_items`, marca los asientos `HELD` con vencimiento y abre la sesión de pago con `PaymentGateway`.
+- `HoldExpirationJob` (cada `stagex.booking.expiration-interval`) vence órdenes y libera asientos; la lectura ya ignora los bloqueos vencidos. Se apaga con `stagex.booking.expiration-job-enabled=false`.
+- Configuración: `stagex.booking.hold-ttl` (`BOOKING_HOLD_TTL`, 10 minutos) y `stagex.booking.max-seats-per-order` (`BOOKING_MAX_SEATS`, 10).
+
 ## Integraciones
 
 `PaymentGateway` y `MailService` son interfaces internas. `MailService` está en `shared.mail`; en desarrollo `SandboxMailService` guarda los últimos correos en memoria y solo registra en el log el destinatario enmascarado y el asunto, nunca el cuerpo con el enlace. Sus implementaciones concretas se seleccionan por configuración (`sandbox` en desarrollo). Así se puede probar la compra sin acoplar la lógica a un proveedor.

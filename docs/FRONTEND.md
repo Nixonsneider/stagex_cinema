@@ -7,6 +7,9 @@
 - **T-015 y T-017 (frontend):** `/verify-email` envía el token del enlace a `POST /auth/verify-email` una sola vez; `/reset-password` pide la contraseña nueva y la envía a `POST /auth/reset-password`. En el mock, cualquier token sirve una vez y `vencido` simula un enlace vencido.
 - **T-033:** cartelera (`/`) con búsqueda por título y filtros de género y clasificación guardados en la URL, y ficha (`/movies/:movieId`) con funciones agrupadas por día. Mientras el backend no exponga `GET /movies` y `GET /movies/{id}/screenings` (T-030, T-032), los datos salen de `src/services/api/mock`, que replica las reglas del servidor. Para usar el backend se define `VITE_API_URL` y `VITE_USE_MOCKS=false`.
 
+- **T-044:** mapa de asientos (`/screenings/:screeningId/seats`) con estado en texto y en color (disponible, seleccionado, reservado, vendido, no disponible), máximo de asientos por compra, correo del invitado si no hay sesión, reserva con `POST /holds`, contador de vencimiento con aviso a los 2 minutos y opción de liberar la reserva. Si la reserva vence o un asiento se ocupa, se limpia la selección y se refresca el mapa. Con `VITE_USE_MOCKS=true` usa `src/services/api/mock/mockBooking.ts`.
+- **Cartelera con backend:** con `VITE_API_URL` y `VITE_USE_MOCKS=false`, la cartelera, la ficha y el mapa consumen el backend real. Los pósters que no cargan se reemplazan por las iniciales de la película.
+
 ## Rutas V1.0
 
 ### Públicas

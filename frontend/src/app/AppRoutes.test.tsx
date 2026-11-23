@@ -73,8 +73,18 @@ describe('rutas de la aplicación', () => {
   });
 
   it('tiene páginas base para las rutas públicas pendientes', () => {
-    renderAt('/screenings/scr-001/seats');
-    expect(screen.getByRole('heading', { name: 'Selección de asientos' })).toBeInTheDocument();
+    renderAt('/checkout/ord-0001');
+    expect(screen.getByRole('heading', { name: 'Resumen y pago' })).toBeInTheDocument();
+  });
+
+  it('lleva de la ficha al mapa de asientos de la función', async () => {
+    const user = userEvent.setup();
+    renderAt('/movies/mov-001');
+
+    await user.click((await screen.findAllByRole('link', { name: /Elegir asientos/ }))[0]);
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Elige tus asientos' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Mapa de asientos' })).toBeInTheDocument();
   });
 
   it('muestra 404 en rutas desconocidas', () => {

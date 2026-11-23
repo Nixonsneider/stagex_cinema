@@ -1,9 +1,13 @@
 package com.stagex.stagex_backend.auth.security;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,7 +15,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -41,6 +48,13 @@ import com.stagex.stagex_backend.auth.repository.AccountTokenRepository;
 import com.stagex.stagex_backend.auth.repository.RefreshTokenRepository;
 import com.stagex.stagex_backend.auth.repository.UserCinemaRepository;
 import com.stagex.stagex_backend.auth.repository.UserRepository;
+import com.stagex.stagex_backend.booking.application.BookingService;
+import com.stagex.stagex_backend.booking.application.BookingViews.Hold;
+import com.stagex.stagex_backend.booking.repository.BookingRepository;
+import com.stagex.stagex_backend.catalog.application.CatalogService;
+import com.stagex.stagex_backend.catalog.application.CatalogViews.PageResult;
+import com.stagex.stagex_backend.catalog.repository.CatalogRepository;
+import com.stagex.stagex_backend.shared.web.ApiException;
 
 /**
  * T-018: cada ruta de docs/API.md solo responde al rol que corresponde. Una respuesta 404
@@ -50,7 +64,8 @@ import com.stagex.stagex_backend.auth.repository.UserRepository;
 		"spring.autoconfigure.exclude=org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,"
 				+ "org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration,"
 				+ "org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration",
-		"stagex.auth.frontend-url=http://localhost:5173"
+		"stagex.auth.frontend-url=http://localhost:5173",
+		"stagex.booking.expiration-job-enabled=false"
 })
 class SecurityRulesTest {
 
@@ -77,6 +92,18 @@ class SecurityRulesTest {
 
 	@MockitoBean
 	private UserCinemaRepository userCinemaRepository;
+
+	@MockitoBean
+	private CatalogService catalogService;
+
+	@MockitoBean
+	private CatalogRepository catalogRepository;
+
+	@MockitoBean
+	private BookingService bookingService;
+
+	@MockitoBean
+	private BookingRepository bookingRepository;
 
 	private MockMvc mvc;
 
@@ -156,8 +183,54 @@ class SecurityRulesTest {
 
 	@Test
 	void laCarteleraEsPublica() throws Exception {
-		mvc.perform(get("/api/v1/movies")).andExpect(status().isNotFound());
-		mvc.perform(get("/api/v1/screenings/" + UUID.randomUUID() + "/seats")).andExpect(status().isNotFound());
+		when(catalogService.searchMovies(isNull(), isNull(), isNull(), eq(0)))
+				.thenReturn(PageResult.of(List.of(), 0, 20, 0));
+		mvc.perform(get("/api/v1/movies"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(0))
+				.andExpect(jsonPath("$.totalPages").value(0));
+
+		UUID screeningId = UUID.randomUUID();
+		when(bookingService.getSeatMap(screeningId)).thenThrow(
+				new ApiException(HttpStatus.NOT_FOUND, "NOT_FOUND", "Esta función ya no está disponible."));
+		mvc.perform(get("/api/v1/screenings/" + screeningId + "/seats"))
+				.andExpect(status().isNotFound())
+				.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+		// Un identificador mal formado es un 404, no un error interno.
+		mvc.perform(get("/api/v1/movies/no-es-un-id")).andExpect(status().isNotFound());
+		mvc.perform(get("/api/v1/movies?page=-1")).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void reservarEsPublicoYUsaElUsuarioDeLaSesion() throws Exception {
+		UUID screeningId = UUID.randomUUID();
+		UUID seatId = UUID.randomUUID();
+		UUID orderId = UUID.randomUUID();
+		Hold hold = new Hold(orderId, orderId, Instant.parse("2026-11-24T20:10:00Z"), new BigDecimal("18000"), "COP",
+				"http://localhost:8080/sandbox/checkout");
+		when(bookingService.createHold(eq(screeningId), eq(List.of(seatId)), any(), any())).thenReturn(hold);
+		String body = "{\"screeningId\":\"" + screeningId + "\",\"screeningSeatIds\":[\"" + seatId
+				+ "\"],\"guestEmail\":\"ana@correo.com\"}";
+
+		mvc.perform(post("/api/v1/holds").contentType(MediaType.APPLICATION_JSON).content(body))
+				.andExpect(status().isCreated())
+				.andExpect(jsonPath("$.holdId").value(orderId.toString()))
+				.andExpect(jsonPath("$.amount").value(18000));
+		verify(bookingService).createHold(screeningId, List.of(seatId), null, "ana@correo.com");
+
+		User customer = user(Role.CUSTOMER);
+		mvc.perform(post("/api/v1/holds").contentType(MediaType.APPLICATION_JSON).content(body)
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtService.issue(customer)))
+				.andExpect(status().isCreated());
+		verify(bookingService).createHold(screeningId, List.of(seatId), customer.getId(), "ana@correo.com");
+
+		mvc.perform(post("/api/v1/holds").contentType(MediaType.APPLICATION_JSON)
+				.content("{\"screeningId\":\"" + screeningId + "\",\"screeningSeatIds\":[]}"))
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+		mvc.perform(delete("/api/v1/holds/" + orderId)).andExpect(status().isNoContent());
+		verify(bookingService).releaseHold(orderId, null);
 	}
 
 	@Test
