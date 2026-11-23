@@ -8,6 +8,8 @@ import { MovieDetailPage } from '../pages/MovieDetailPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { PlaceholderPage } from '../pages/PlaceholderPage';
 import { RegisterPage } from '../pages/RegisterPage';
+import { ResetPasswordPage } from '../pages/ResetPasswordPage';
+import { VerifyEmailPage } from '../pages/VerifyEmailPage';
 import type { Role } from '../types/auth';
 
 interface PendingRoute {
@@ -44,6 +46,8 @@ export function AppRoutes() {
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="verify-email" element={<VerifyEmailPage />} />
+        <Route path="reset-password" element={<ResetPasswordPage />} />
         {PENDING_ROUTES.map((route) => {
           const page = <PlaceholderPage title={route.title} task={route.task} />;
           return (

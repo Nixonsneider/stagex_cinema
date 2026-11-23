@@ -1,6 +1,6 @@
 import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../../types/auth';
 import { USE_MOCKS, apiPost } from './httpClient';
-import { mockLogin, mockRegister } from './mock/mockAuth';
+import { mockConsumeToken, mockLogin, mockRegister } from './mock/mockAuth';
 
 /** Simula la latencia de red en desarrollo para poder ver los estados de envío. */
 const MOCK_DELAY_MS = import.meta.env.MODE === 'test' ? 0 : 300;
@@ -36,4 +36,16 @@ export function requestPasswordReset(email: string): Promise<void> {
 export function logout(refreshToken: string): Promise<void> {
   if (USE_MOCKS) return fromMock(() => undefined);
   return apiPost<void>('/auth/logout', { refreshToken });
+}
+
+/** Activa la cuenta con el token del enlace de verificación (T-015). */
+export function verifyEmail(token: string): Promise<void> {
+  if (USE_MOCKS) return fromMock(() => mockConsumeToken(token));
+  return apiPost<void>('/auth/verify-email', { token });
+}
+
+/** Cambia la contraseña con el token del enlace de recuperación (T-017). */
+export function resetPassword(token: string, newPassword: string): Promise<void> {
+  if (USE_MOCKS) return fromMock(() => mockConsumeToken(token));
+  return apiPost<void>('/auth/reset-password', { token, newPassword });
 }

@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AppRoutes } from '../../app/AppRoutes';
-import { DEMO_PASSWORD, resetMockAuth } from '../../services/api/mock/mockAuth';
+import { DEMO_PASSWORD, EXPIRED_MOCK_TOKEN, resetMockAuth } from '../../services/api/mock/mockAuth';
 import { AuthProvider } from './AuthContext';
 
 function renderAt(path: string) {
@@ -181,5 +181,53 @@ describe('recuperar contraseña', () => {
     await user.click(screen.getByRole('button', { name: 'Enviar enlace' }));
 
     expect(await screen.findByText(/Si el correo está registrado/)).toBeInTheDocument();
+  });
+});
+
+describe('enlaces de correo', () => {
+  it('confirma el correo con el enlace de verificación', async () => {
+    renderAt('/verify-email?token=abc123');
+
+    expect(await screen.findByText('Tu cuenta quedó activa. Ya puedes iniciar sesión.')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toBeInTheDocument();
+  });
+
+  it('avisa cuando el enlace de verificación venció', async () => {
+    renderAt(`/verify-email?token=${EXPIRED_MOCK_TOKEN}`);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('El enlace no es válido o ya venció');
+  });
+
+  it('avisa cuando el enlace no trae token', async () => {
+    renderAt('/verify-email');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('El enlace no es válido o ya venció');
+  });
+
+  it('cambia la contraseña con el enlace de recuperación', async () => {
+    const user = userEvent.setup();
+    renderAt('/reset-password?token=abc123');
+
+    await user.type(screen.getByLabelText('Contraseña nueva'), 'Nueva2026');
+    await user.type(screen.getByLabelText('Confirmar contraseña'), 'Nueva2026');
+    await user.click(screen.getByRole('button', { name: 'Guardar contraseña' }));
+
+    expect(await screen.findByRole('heading', { name: 'Contraseña actualizada' })).toBeInTheDocument();
+  });
+
+  it('valida la contraseña nueva y el enlace vencido', async () => {
+    const user = userEvent.setup();
+    renderAt(`/reset-password?token=${EXPIRED_MOCK_TOKEN}`);
+
+    await user.type(screen.getByLabelText('Contraseña nueva'), 'corta');
+    await user.click(screen.getByRole('button', { name: 'Guardar contraseña' }));
+    expect(screen.getByText(/al menos 8 caracteres/)).toBeInTheDocument();
+    expect(screen.getByText('Las contraseñas no coinciden.')).toBeInTheDocument();
+
+    await user.clear(screen.getByLabelText('Contraseña nueva'));
+    await user.type(screen.getByLabelText('Contraseña nueva'), 'Nueva2026');
+    await user.type(screen.getByLabelText('Confirmar contraseña'), 'Nueva2026');
+    await user.click(screen.getByRole('button', { name: 'Guardar contraseña' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('El enlace no es válido o ya venció');
   });
 });

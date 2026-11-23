@@ -86,6 +86,8 @@ Verificar correo (`POST /auth/verify-email`), respuesta `204`:
 
 El token es temporal y de un solo uso. Si es inválido o venció responde `400 INVALID_OR_EXPIRED_TOKEN`.
 
+Los enlaces de los correos apuntan al frontend: `FRONTEND_URL/verify-email?token=...` (vence en 24 horas) y `FRONTEND_URL/reset-password?token=...` (vence en 1 hora). Esas páginas envían el token a `POST /auth/verify-email` y `POST /auth/reset-password`. Cada token sirve una sola vez y al pedir uno nuevo se invalida el anterior.
+
 Inicio de sesión (`POST /auth/login`):
 
 ```json
@@ -108,11 +110,13 @@ Credenciales incorrectas responden siempre `401 INVALID_CREDENTIALS`, sin indica
 
 Renovar sesión (`POST /auth/refresh`) recibe `{ "refreshToken": "opaque-token" }` y devuelve el mismo formato que el inicio de sesión con un refresh token nuevo; el anterior queda revocado.
 
+El access token es un JWT HS256 con `sub` (id del usuario), `role`, `name`, `iss=stagex` y una vida de 15 minutos; nunca incluye el correo. Se envía como `Authorization: Bearer <accessToken>`. El refresh token es opaco, dura 7 días y se rota en cada renovación. Si llega un refresh token ya rotado o revocado, se cierran todas las sesiones del usuario y se responde `401 UNAUTHORIZED`.
+
 Cerrar sesión (`POST /auth/logout`) recibe `{ "refreshToken": "opaque-token" }`, revoca ese token y responde `204`.
 
 Recuperar contraseña (`POST /auth/forgot-password`) recibe `{ "email": "ana@example.com" }` y responde siempre `202`, exista o no el correo.
 
-Cambiar contraseña (`POST /auth/reset-password`), respuesta `204`:
+Cambiar contraseña (`POST /auth/reset-password`), respuesta `204`. También cierra todas las sesiones abiertas del usuario:
 
 ```json
 { "token": "opaque-token", "newPassword": "********" }
@@ -198,6 +202,8 @@ Formato único:
   "fieldErrors": []
 }
 ```
+
+Las contraseñas nuevas deben tener entre 8 y 72 caracteres, con letras y números. Sin token, o con un token vencido o de otro emisor, las rutas protegidas responden `401 UNAUTHORIZED`; con un rol sin permiso, `403 FORBIDDEN`. Las rutas que no aparecen en este contrato se niegan por defecto.
 
 Usar `400` para validación, `401` sin autenticación, `403` sin permiso, `404` inexistente, `409` conflicto de estado y `422` rechazo funcional del proveedor de pagos. No devolver trazas al cliente.
 

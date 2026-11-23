@@ -64,7 +64,7 @@ Variables mínimas:
 DATABASE_URL=jdbc:postgresql://localhost:5433/stagex
 DATABASE_USERNAME=stagex
 DATABASE_PASSWORD=change-me
-JWT_SECRET=change-me-in-development
+JWT_SECRET=change-me-in-development-min-32-bytes
 PAYMENT_PROVIDER_URL=
 PAYMENT_PROVIDER_SECRET=
 MAIL_PROVIDER_URL=
@@ -87,7 +87,10 @@ $env:SPRING_PROFILES_ACTIVE="local"
 .\mvnw.cmd spring-boot:run
 ```
 
-El endpoint de salud de Actuator queda disponible en `/actuator/health`. Para
+El endpoint de salud de Actuator queda disponible en `/actuator/health`.
+Con el perfil `local` se cargan datos demo y cuentas de prueba (contraseña `StageX2026`);
+la lista está en [docs/MODELO_DATOS.md](./docs/MODELO_DATOS.md#datos-demo-t-019).
+`JWT_SECRET` debe tener al menos 32 bytes; sin variable se usa un secreto solo para desarrollo. Para
 iniciar la aplicación se necesita una instancia PostgreSQL accesible mediante
 las variables `DATABASE_*`. El perfil `local` usa los valores de desarrollo
 definidos en `docker-compose.yml`; no reutilizar esos valores en producción.
