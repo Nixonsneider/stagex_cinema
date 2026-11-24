@@ -86,6 +86,8 @@ Verificar correo (`POST /auth/verify-email`), respuesta `204`:
 
 El token es temporal y de un solo uso. Si es inválido o venció responde `400 INVALID_OR_EXPIRED_TOKEN`.
 
+Los enlaces de los correos apuntan al frontend: `FRONTEND_URL/verify-email?token=...` (vence en 24 horas) y `FRONTEND_URL/reset-password?token=...` (vence en 1 hora). Esas páginas envían el token a `POST /auth/verify-email` y `POST /auth/reset-password`. Cada token sirve una sola vez y al pedir uno nuevo se invalida el anterior.
+
 Inicio de sesión (`POST /auth/login`):
 
 ```json
@@ -108,17 +110,38 @@ Credenciales incorrectas responden siempre `401 INVALID_CREDENTIALS`, sin indica
 
 Renovar sesión (`POST /auth/refresh`) recibe `{ "refreshToken": "opaque-token" }` y devuelve el mismo formato que el inicio de sesión con un refresh token nuevo; el anterior queda revocado.
 
+El access token es un JWT HS256 con `sub` (id del usuario), `role`, `name`, `iss=stagex` y una vida de 15 minutos; nunca incluye el correo. Se envía como `Authorization: Bearer <accessToken>`. El refresh token es opaco, dura 7 días y se rota en cada renovación. Si llega un refresh token ya rotado o revocado, se cierran todas las sesiones del usuario y se responde `401 UNAUTHORIZED`.
+
 Cerrar sesión (`POST /auth/logout`) recibe `{ "refreshToken": "opaque-token" }`, revoca ese token y responde `204`.
 
 Recuperar contraseña (`POST /auth/forgot-password`) recibe `{ "email": "ana@example.com" }` y responde siempre `202`, exista o no el correo.
 
-Cambiar contraseña (`POST /auth/reset-password`), respuesta `204`:
+Cambiar contraseña (`POST /auth/reset-password`), respuesta `204`. También cierra todas las sesiones abiertas del usuario:
 
 ```json
 { "token": "opaque-token", "newPassword": "********" }
 ```
 
-Crear reserva:
+Mapa de asientos (`GET /screenings/{screeningId}/seats`, T-040). Solo responde para funciones programadas, futuras y con película, sala y cine activos; si no, `404 NOT_FOUND`. Un bloqueo vencido se muestra como `AVAILABLE` aunque el job aún no lo haya liberado. `status` es `AVAILABLE`, `HELD`, `SOLD` o `UNAVAILABLE` (asiento físico deshabilitado). `id` es el identificador de `screening_seats` que se envía en `POST /holds`:
+
+```json
+{
+  "screeningId": "uuid",
+  "movieId": "uuid",
+  "movieTitle": "El Último Faro",
+  "startsAt": "2026-11-24T20:00:00Z",
+  "roomName": "Sala 1",
+  "price": 18000.00,
+  "currency": "COP",
+  "maxSeatsPerOrder": 10,
+  "holdMinutes": 10,
+  "seats": [{ "id": "uuid", "row": "A", "number": 1, "seatType": "STANDARD", "status": "AVAILABLE" }]
+}
+```
+
+`GET /movies/{movieId}/screenings` devuelve `[{ "id", "startsAt", "roomName", "price", "currency", "availableSeats" }]`. `GET /movies` acepta `query` (sin distinguir mayúsculas ni tildes), `genre`, `ageRating` y `page` (desde 0, 20 por página). Un identificador mal formado responde `404 NOT_FOUND`.
+
+Crear reserva (`POST /holds`, T-041), respuesta `201`. Si la petición trae un access token válido, la orden queda a nombre de ese cliente; si no, `guestEmail` es obligatorio (`400 VALIDATION_ERROR`). Máximo `stagex.booking.max-seats-per-order` asientos (10 por defecto). Un asiento bloqueado o vendido responde `409 SEAT_NOT_AVAILABLE`:
 
 ```json
 {
@@ -127,7 +150,11 @@ Crear reserva:
 }
 ```
 
-Respuesta:
+```json
+{ "screeningId": "uuid", "screeningSeatIds": ["uuid"], "guestEmail": "invitado@example.com" }
+```
+
+Respuesta (el total lo calcula el backend; `paymentUrl` es nulo si el total es 0):
 
 ```json
 {
@@ -139,6 +166,8 @@ Respuesta:
   "paymentUrl": "https://sandbox.example/checkout"
 }
 ```
+
+Liberar reserva (`DELETE /holds/{holdId}`), respuesta `204`: los asientos vuelven a `AVAILABLE` y la orden pasa a `CANCELLED`. Si la orden es de un cliente registrado, solo él puede liberarla (a otros se responde `404`). Repetirla sobre una reserva ya vencida o liberada no hace nada; sobre una orden pagada responde `409 ORDER_ALREADY_PAID`. Un job (T-042) vence cada 30 segundos las órdenes pendientes y libera los bloqueos vencidos.
 
 Validar entrada:
 
@@ -199,6 +228,8 @@ Formato único:
 }
 ```
 
+Las contraseñas nuevas deben tener entre 8 y 72 caracteres, con letras y números. Sin token, o con un token vencido o de otro emisor, las rutas protegidas responden `401 UNAUTHORIZED`; con un rol sin permiso, `403 FORBIDDEN`. Las rutas que no aparecen en este contrato se niegan por defecto.
+
 Usar `400` para validación, `401` sin autenticación, `403` sin permiso, `404` inexistente, `409` conflicto de estado y `422` rechazo funcional del proveedor de pagos. No devolver trazas al cliente.
 
 Códigos mínimos (se pueden ampliar sin cambiar el formato):
@@ -225,7 +256,7 @@ Códigos mínimos (se pueden ampliar sin cambiar el formato):
 
 Puntos del contrato que el equipo debe definir antes de implementar la compra (T-043, T-045):
 
-1. `POST /holds` ya devuelve `orderId`, por lo que crea la orden `PENDING`. Falta definir qué hace `POST /orders`: confirmar el checkout o recibir el correo del invitado.
-2. `holdId` no tiene tabla propia en `MODELO_DATOS.md`: los bloqueos viven en `screening_seats.hold_expires_at`. Definir si `holdId` es el mismo `orderId` o un identificador aparte.
-3. El correo del cliente invitado (`guestEmail`) debe viajar en `POST /holds` o en `POST /orders`; hoy ninguno de los dos lo incluye.
-4. Tamaño de página por defecto (`size=20` es una propuesta) y máximo permitido.
+1. `POST /holds` crea la orden `PENDING`. Falta definir qué hace `POST /orders`: confirmar el checkout o permitir cambiar el correo del invitado.
+2. Resuelto en T-041: `holdId` es el mismo `orderId`; los bloqueos viven en `screening_seats.hold_expires_at`.
+3. Resuelto en T-041: el correo del invitado viaja como `guestEmail` en `POST /holds`.
+4. Resuelto en T-033: 20 elementos por página en `GET /movies`.

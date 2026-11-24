@@ -64,7 +64,7 @@ Variables mínimas:
 DATABASE_URL=jdbc:postgresql://localhost:5433/stagex
 DATABASE_USERNAME=stagex
 DATABASE_PASSWORD=change-me
-JWT_SECRET=change-me-in-development
+JWT_SECRET=change-me-in-development-min-32-bytes
 PAYMENT_PROVIDER_URL=
 PAYMENT_PROVIDER_SECRET=
 MAIL_PROVIDER_URL=
@@ -87,7 +87,10 @@ $env:SPRING_PROFILES_ACTIVE="local"
 .\mvnw.cmd spring-boot:run
 ```
 
-El endpoint de salud de Actuator queda disponible en `/actuator/health`. Para
+El endpoint de salud de Actuator queda disponible en `/actuator/health`.
+Con el perfil `local` se cargan datos demo y cuentas de prueba (contraseña `StageX2026`);
+la lista está en [docs/MODELO_DATOS.md](./docs/MODELO_DATOS.md#datos-demo-t-019).
+`JWT_SECRET` debe tener al menos 32 bytes; sin variable se usa un secreto solo para desarrollo. Para
 iniciar la aplicación se necesita una instancia PostgreSQL accesible mediante
 las variables `DATABASE_*`. El perfil `local` usa los valores de desarrollo
 definidos en `docker-compose.yml`; no reutilizar esos valores en producción.
@@ -108,3 +111,39 @@ docker compose down -v
 
 La eliminación del volumen borra la base local y debe usarse solamente cuando
 se quiera reiniciar el entorno desde cero.
+
+### Sin Docker (PostgreSQL instalado en Windows)
+
+Con un PostgreSQL 14 o superior local, crea el usuario y las bases una sola vez
+(como superusuario `postgres`):
+
+```powershell
+& "C:\Program Files\PostgreSQL\14\bin\psql.exe" -U postgres -h localhost -c "CREATE ROLE stagex LOGIN PASSWORD 'stagex_local_dev';" -c "CREATE DATABASE stagex OWNER stagex;" -c "CREATE DATABASE stagex_test OWNER stagex;"
+```
+
+Luego, desde `backend/`, apunta a esa instancia (puerto `5432`):
+
+```powershell
+# Pruebas, incluidas las de base de datos y concurrencia (usa la base desechable stagex_test)
+$env:STAGEX_TEST_DATABASE_URL="jdbc:postgresql://localhost:5432/stagex_test"; .\mvnw.cmd test
+
+# Aplicación con datos demo
+$env:SPRING_PROFILES_ACTIVE="local"; $env:DATABASE_URL="jdbc:postgresql://localhost:5432/stagex"; .\mvnw.cmd spring-boot:run
+```
+
+Si PowerShell bloquea `npm` por la política de ejecución, usa `npm.cmd` (por ejemplo `npm.cmd run dev`).
+
+Las funciones demo cubren los tres días siguientes a la primera carga. Cuando pasen, la cartelera
+queda vacía: borra y vuelve a crear la base `stagex` (o `docker compose down -v`) para regenerarlas.
+
+## Estado actual
+
+| Área | Tareas | Qué funciona |
+|---|---|---|
+| Base de datos | T-010 a T-013, T-019 | Esquema completo con Flyway y datos demo en el perfil `local` |
+| Acceso | T-014 a T-018, T-020 | Registro, verificación, login JWT, refresh, recuperación y permisos por rol |
+| Cartelera | T-033 | `GET /movies`, ficha y funciones desde PostgreSQL |
+| Asientos | T-040 a T-042, T-044 | Mapa por función, reserva de 10 minutos sin doble bloqueo y vencimiento automático |
+| Pendiente | T-030 a T-032, T-045 en adelante | Administración del catálogo, checkout, pago, entradas QR y ventas |
+
+El detalle de cada tarea está en [TASKS.md](./TASKS.md).

@@ -15,6 +15,8 @@
 | `orders` | Compra | `id`, `user_id` nullable, `guest_email` nullable, `screening_id`, `status`, `total`, `currency`, `payment_reference` |
 | `order_items` | Asientos comprados | `id`, `order_id`, `screening_seat_id`, `unit_price` |
 | `tickets` | Entrada emitida | `id`, `order_item_id`, `qr_token_hash`, `status`, `validated_at`, `validated_by` |
+| `account_tokens` | Enlaces de verificación y recuperación | `id`, `user_id`, `purpose`, `token_hash`, `expires_at`, `used_at`, `created_at` |
+| `refresh_tokens` | Sesiones abiertas | `id`, `user_id`, `token_hash`, `expires_at`, `revoked_at`, `created_at` |
 | `audit_events` | Acciones críticas | `id`, `actor_id`, `action`, `entity_type`, `entity_id`, `metadata_json`, `created_at` |
 
 ## Relaciones
@@ -49,6 +51,7 @@ ticket:        ISSUED | USED | CANCELLED | EXPIRED
 - V5 crea `orders`, `order_items`, `tickets` y `audit_events`. Una orden tiene `user_id` o `guest_email` (en minúsculas), nunca ambos. Una orden `PAID` siempre tiene `payment_reference`. Un trigger impide agregar a la orden un asiento de otra función.
 - `tickets.qr_token_hash` es el SHA-256 en hexadecimal minúscula que produce `QrTokenService`. Solo una entrada `USED` tiene `validated_at` y `validated_by`, y siempre ambos.
 - `audit_events` solo admite inserciones: un trigger rechaza `UPDATE` y `DELETE` (SQLSTATE `23001`). `actor_id` es nulo cuando la acción la origina el sistema; `action` va en mayúsculas (`TICKET_VALIDATED`) y `metadata_json` es un objeto JSON.
+- V6 crea `account_tokens` (`EMAIL_VERIFICATION` o `PASSWORD_RESET`) y `refresh_tokens`. Ambos guardan solo el SHA-256 del token, único y en hexadecimal minúscula, y exigen `expires_at > created_at`.
 - `screening_seats(screening_id, seat_id)` único.
 - `order_items(order_id, screening_seat_id)` único.
 - `payment_reference` único cuando no sea nulo.
@@ -63,6 +66,19 @@ ticket:        ISSUED | USED | CANCELLED | EXPIRED
 Al iniciar el backend con el perfil `local`, Flyway aplica los scripts de `backend/src/main/resources/db/migration/` en orden de versión. En una base limpia, `V1__initial_schema.sql` registra la versión 1 en `flyway_schema_history` sin crear tablas de negocio. Cada cambio posterior de esquema requiere una migración nueva. Hibernate valida el esquema con `ddl-auto=validate`.
 
 Para repetir la prueba de integración, define `STAGEX_TEST_DATABASE_URL` con la URL JDBC de una base PostgreSQL vacía y desechable que acepte las credenciales del perfil `local`. Ejecuta `./mvnw test` desde `backend/`. Sin esa variable, las pruebas de migración y de esquema (`CinemaSchemaTest`, `ScreeningSchemaTest`, `OrderTicketSchemaTest`) se omiten.
+
+## Datos demo (T-019)
+
+Con el perfil `local`, Flyway también carga `db/demo/R__demo_data.sql`: un cine, dos salas (96 y 60 asientos), cuatro películas, quince funciones en los tres días siguientes y sus asientos por función. Además crea estas cuentas, todas con la contraseña `StageX2026`, la misma del mock del frontend:
+
+| Correo | Rol | Estado |
+|---|---|---|
+| `cliente@stagex.test` | `CUSTOMER` | Activa |
+| `taquilla@stagex.test` | `CASHIER` | Activa, asignada al cine demo |
+| `admin@stagex.test` | `CINEMA_ADMIN` | Activa, asignada al cine demo |
+| `pendiente@stagex.test` | `CUSTOMER` | Pendiente de verificación |
+
+Es una migración repetible e idempotente (identificadores fijos y `ON CONFLICT DO NOTHING`). Nunca se carga fuera del perfil `local`, porque esas contraseñas son públicas. Las funciones quedan programadas desde el día siguiente a la primera carga; para regenerarlas se reinicia la base con `docker compose down -v`.
 
 ## Desarrollo local
 

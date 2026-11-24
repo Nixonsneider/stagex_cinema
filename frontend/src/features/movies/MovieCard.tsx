@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import type { MovieSummary } from '../../types/movie';
 import { ageRatingLabel, formatDuration } from './format';
@@ -12,10 +13,12 @@ function initials(title: string): string {
 }
 
 export function MovieCard({ movie }: { movie: MovieSummary }) {
+  // Si el póster no carga (URL rota o archivo ausente), se muestra el marcador con las iniciales.
+  const [posterFailed, setPosterFailed] = useState(false);
   return (
     <article className="movie-card">
-      {movie.posterUrl ? (
-        <img className="poster" src={movie.posterUrl} alt="" loading="lazy" />
+      {movie.posterUrl && !posterFailed ? (
+        <img className="poster" src={movie.posterUrl} alt="" loading="lazy" onError={() => setPosterFailed(true)} />
       ) : (
         <div className="poster poster-placeholder" aria-hidden="true">
           {initials(movie.title)}

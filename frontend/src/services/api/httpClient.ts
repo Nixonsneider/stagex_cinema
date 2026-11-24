@@ -36,7 +36,7 @@ export function setAccessToken(token: string | null): void {
   accessToken = token;
 }
 
-async function request<T>(method: 'GET' | 'POST', url: URL, body?: unknown): Promise<T> {
+async function request<T>(method: 'GET' | 'POST' | 'DELETE', url: URL, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
@@ -86,4 +86,8 @@ export function apiGet<T>(path: string, params: QueryParams = {}): Promise<T> {
 
 export function apiPost<T>(path: string, body: unknown): Promise<T> {
   return request<T>('POST', new URL(`${API_URL}/api/v1${path}`), body);
+}
+
+export function apiDelete<T>(path: string): Promise<T> {
+  return request<T>('DELETE', new URL(`${API_URL}/api/v1${path}`));
 }

@@ -28,6 +28,10 @@ const DEMO_ACCOUNTS: ReadonlyArray<MockAccount> = [
 
 let accounts: MockAccount[] = [...DEMO_ACCOUNTS];
 let sequence = 0;
+let usedTokens = new Set<string>();
+
+/** Token que el mock trata como vencido, para probar el mensaje de error. */
+export const EXPIRED_MOCK_TOKEN = 'vencido';
 
 function demo(id: string, name: string, email: string, role: Role, status: MockAccount['status']): MockAccount {
   return { id, name, email, role, status, password: DEMO_PASSWORD };
@@ -37,6 +41,7 @@ function demo(id: string, name: string, email: string, role: Role, status: MockA
 export function resetMockAuth(): void {
   accounts = [...DEMO_ACCOUNTS];
   sequence = 0;
+  usedTokens = new Set<string>();
 }
 
 function normalizeEmail(email: string): string {
@@ -81,4 +86,15 @@ export function mockRegister({ name, email, password }: RegisterRequest): Regist
     { id, name: name.trim(), email: normalized, password, role: 'CUSTOMER', status: 'PENDING_VERIFICATION' },
   ];
   return { userId: id, status: 'PENDING_VERIFICATION' };
+}
+
+/**
+ * Simula el uso de un enlace de verificación o recuperación: sin correo real no hay
+ * tokens emitidos, así que acepta cualquier token una sola vez, salvo EXPIRED_MOCK_TOKEN.
+ */
+export function mockConsumeToken(token: string): void {
+  if (!token || token === EXPIRED_MOCK_TOKEN || usedTokens.has(token)) {
+    throw new ApiError(400, 'INVALID_OR_EXPIRED_TOKEN', 'El enlace no es válido o ya venció. Solicita uno nuevo.');
+  }
+  usedTokens.add(token);
 }

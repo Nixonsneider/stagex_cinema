@@ -210,6 +210,19 @@ export function findScreenings(movieId: string, now: Date = new Date()): Screeni
     }));
 }
 
+/** Función visible con su película, para el mapa de asientos de prueba (T-044). */
+export function findScreeningById(
+  screeningId: string,
+  now: Date = new Date(),
+): { screening: Screening; movie: MovieDetail } | null {
+  const screening = visibleScreenings(now).find((candidate) => candidate.id === screeningId);
+  if (!screening) return null;
+  const movie = findMovie(screening.movieId);
+  if (!movie) return null;
+  const { id, startsAt, roomName, price, currency, availableSeats } = screening;
+  return { screening: { id, startsAt, roomName, price, currency, availableSeats }, movie };
+}
+
 /** Opciones de filtro del catálogo de prueba. */
 export const GENRES = ['Acción', 'Animación', 'Ciencia ficción', 'Comedia', 'Drama', 'Terror'];
 export const AGE_RATINGS = ['TODOS', '7+', '12+', '15+', '18+'];

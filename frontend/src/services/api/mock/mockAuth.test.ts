@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ApiError } from '../httpClient';
-import { DEMO_PASSWORD, mockLogin, mockRegister, resetMockAuth } from './mockAuth';
+import { DEMO_PASSWORD, EXPIRED_MOCK_TOKEN, mockConsumeToken, mockLogin, mockRegister, resetMockAuth } from './mockAuth';
 
 function errorOf(action: () => unknown): ApiError {
   try {
@@ -50,5 +50,11 @@ describe('autenticación de prueba', () => {
     expect(duplicate.status).toBe(409);
     expect(duplicate.code).toBe('EMAIL_ALREADY_REGISTERED');
     expect(errorOf(() => mockLogin('ana@correo.com', 'Segura2026')).code).toBe('ACCOUNT_PENDING_VERIFICATION');
+  });
+
+  it('acepta cada enlace de correo una sola vez', () => {
+    expect(() => mockConsumeToken('abc')).not.toThrow();
+    expect(errorOf(() => mockConsumeToken('abc')).code).toBe('INVALID_OR_EXPIRED_TOKEN');
+    expect(errorOf(() => mockConsumeToken(EXPIRED_MOCK_TOKEN)).status).toBe(400);
   });
 });

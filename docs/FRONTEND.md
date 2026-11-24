@@ -4,7 +4,11 @@
 
 - **T-003:** proyecto en `frontend/` con React 19, TypeScript, Vite, React Router 7 y Vitest. Todas las rutas de esta guía existen; las que aún no están implementadas muestran una página base con la tarea pendiente. Comandos en `frontend/README.md`.
 - **T-020:** inicio de sesión (`/login`), registro (`/register`) y recuperación de contraseña (`/forgot-password`) con validación accesible, protección de rutas por rol y menú según el rol. Sin sesión, una ruta privada lleva al login y luego regresa a la ruta pedida; con otro rol muestra "Acceso no permitido". Después de iniciar sesión, el cliente va a la cartelera, el taquillero a `/access/validate` y el administrador a `/admin/movies`. Mientras T-016 no exponga `/auth/*`, `src/services/api/mock/mockAuth.ts` simula el backend con las cuentas demo de `frontend/README.md`. Los tokens viven solo en memoria: al recargar la página se pide iniciar sesión de nuevo hasta que el backend entregue el refresh token en una cookie `HttpOnly`.
+- **T-015 y T-017 (frontend):** `/verify-email` envía el token del enlace a `POST /auth/verify-email` una sola vez; `/reset-password` pide la contraseña nueva y la envía a `POST /auth/reset-password`. En el mock, cualquier token sirve una vez y `vencido` simula un enlace vencido.
 - **T-033:** cartelera (`/`) con búsqueda por título y filtros de género y clasificación guardados en la URL, y ficha (`/movies/:movieId`) con funciones agrupadas por día. Mientras el backend no exponga `GET /movies` y `GET /movies/{id}/screenings` (T-030, T-032), los datos salen de `src/services/api/mock`, que replica las reglas del servidor. Para usar el backend se define `VITE_API_URL` y `VITE_USE_MOCKS=false`.
+
+- **T-044:** mapa de asientos (`/screenings/:screeningId/seats`) con estado en texto y en color (disponible, seleccionado, reservado, vendido, no disponible), máximo de asientos por compra, correo del invitado si no hay sesión, reserva con `POST /holds`, contador de vencimiento con aviso a los 2 minutos y opción de liberar la reserva. Si la reserva vence o un asiento se ocupa, se limpia la selección y se refresca el mapa. Con `VITE_USE_MOCKS=true` usa `src/services/api/mock/mockBooking.ts`.
+- **Cartelera con backend:** con `VITE_API_URL` y `VITE_USE_MOCKS=false`, la cartelera, la ficha y el mapa consumen el backend real. Los pósters que no cargan se reemplazan por las iniciales de la película.
 
 ## Rutas V1.0
 
@@ -18,6 +22,7 @@
 | `/checkout/:orderId` | Resumen y pago |
 | `/confirmation/:orderId` | Confirmación |
 | `/login`, `/register`, `/forgot-password` | Acceso |
+| `/verify-email?token=`, `/reset-password?token=` | Destino de los enlaces de los correos de verificación y recuperación |
 
 ### Protegidas
 
